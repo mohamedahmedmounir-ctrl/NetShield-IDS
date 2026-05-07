@@ -188,14 +188,6 @@ The network-wide threat score (0–100) is computed as a weighted sum:
 
 ---
 
-## 📈 Screenshots
-
-> *(Add screenshots of your running dashboard here)*
-
-```
-[Dashboard Overview]    [Alert Detail Modal]
-[Protocol Chart]        [Top Suspicious IPs]
-```
 
 ---
 
@@ -219,10 +211,7 @@ This tool is developed for educational and research purposes only. Only use NetS
 
 ---
 
-## 📄 License
-
-MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-*Built with ❤️ for the cybersecurity community.*
+*Built By Mohamed AHmed MOunir.*
