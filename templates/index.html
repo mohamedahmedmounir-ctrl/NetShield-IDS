@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NetShield IDS — Smart Intrusion Detection System</title>
+
+  <!-- Google Fonts: Share Tech Mono (data) + Rajdhani (UI labels) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js for real-time charts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TOP NAVIGATION BAR
+═══════════════════════════════════════════════════════════════ -->
+<nav class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-icon">⬡</span>
+    <span class="brand-name">NetShield <em>IDS</em></span>
+    <span class="brand-version">v1.0.0</span>
+  </div>
+
+  <div class="topbar-center">
+    <div class="status-pill" id="statusPill">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusLabel">OFFLINE</span>
+    </div>
+    <div class="uptime-display">
+      <span class="uptime-label">UPTIME</span>
+      <span class="uptime-value" id="uptimeDisplay">00:00:00</span>
+    </div>
+  </div>
+
+  <div class="topbar-actions">
+    <button class="btn-ctrl btn-start"  id="btnStart"  onclick="startIDS()">▶ START</button>
+    <button class="btn-ctrl btn-stop"   id="btnStop"   onclick="stopIDS()"  disabled>■ STOP</button>
+    <button class="btn-ctrl btn-export" onclick="exportLogs()">⬇ EXPORT</button>
+    <button class="btn-ctrl btn-clear"  onclick="clearLogs()">⌫ CLEAR</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO THREAT SCORE BANNER
+═══════════════════════════════════════════════════════════════ -->
+<div class="threat-banner" id="threatBanner">
+  <div class="threat-score-ring">
+    <svg viewBox="0 0 120 120" class="score-svg">
+      <circle cx="60" cy="60" r="52" class="ring-bg"/>
+      <circle cx="60" cy="60" r="52" class="ring-fg" id="scoreRing"
+              style="stroke-dasharray:326.73; stroke-dashoffset:326.73"/>
+    </svg>
+    <div class="score-inner">
+      <span class="score-num" id="scoreNum">0</span>
+      <span class="score-pct">%</span>
+    </div>
+  </div>
+  <div class="threat-meta">
+    <div class="threat-level" id="threatLevelLabel">LOW</div>
+    <div class="threat-desc">Network Threat Index</div>
+    <div class="threat-action" id="threatAction">All systems nominal</div>
+  </div>
+  <!-- Summary counters -->
+  <div class="summary-stats">
+    <div class="stat-block">
+      <span class="stat-value" id="totalPackets">0</span>
+      <span class="stat-label">Packets</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-block">
+      <span class="stat-value alert-red" id="totalAlerts">0</span>
+      <span class="stat-label">Alerts</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-block">
+      <span class="stat-value" id="totalBandwidth">0 KB</span>
+      <span class="stat-label">Bandwidth</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-block">
+      <span class="stat-value" id="monitoringInterface">Simulated</span>
+      <span class="stat-label">Interface</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MAIN GRID
+═══════════════════════════════════════════════════════════════ -->
+<main class="dashboard-grid">
+
+  <!-- ── LIVE TRAFFIC TIMELINE ──────────────────────────── -->
+  <section class="card card-wide" id="cardTimeline">
+    <div class="card-header">
+      <span class="card-title">📡 Live Traffic Timeline</span>
+      <span class="card-badge pulse-badge">LIVE</span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="timelineChart"></canvas>
+    </div>
+  </section>
+
+  <!-- ── PROTOCOL DISTRIBUTION ─────────────────────────── -->
+  <section class="card" id="cardProtocol">
+    <div class="card-header">
+      <span class="card-title">🔬 Protocol Mix</span>
+    </div>
+    <div class="chart-wrap chart-wrap-sm">
+      <canvas id="protocolChart"></canvas>
+    </div>
+    <div class="protocol-legend" id="protocolLegend"></div>
+  </section>
+
+  <!-- ── TOP SUSPICIOUS IPs ────────────────────────────── -->
+  <section class="card" id="cardTopIPs">
+    <div class="card-header">
+      <span class="card-title">🎯 Top Suspicious IPs</span>
+    </div>
+    <div class="ip-list" id="topIPList">
+      <div class="no-data">Waiting for data…</div>
+    </div>
+  </section>
+
+  <!-- ── THREAT ALERTS TABLE ───────────────────────────── -->
+  <section class="card card-wide" id="cardAlerts">
+    <div class="card-header">
+      <span class="card-title">🚨 Threat Alerts</span>
+      <div class="alert-controls">
+        <select class="filter-select" id="severityFilter" onchange="filterAlerts()">
+          <option value="">All Severities</option>
+          <option value="CRITICAL">CRITICAL</option>
+          <option value="HIGH">HIGH</option>
+          <option value="MEDIUM">MEDIUM</option>
+          <option value="LOW">LOW</option>
+        </select>
+        <input class="search-box" id="alertSearch" placeholder="Search IP / attack…"
+               oninput="filterAlerts()" />
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="ids-table" id="alertsTable">
+        <thead>
+          <tr>
+            <th>TIME</th>
+            <th>SEVERITY</th>
+            <th>ATTACK TYPE</th>
+            <th>SRC IP</th>
+            <th>DST IP</th>
+            <th>PROTO</th>
+            <th>SCORE</th>
+            <th>SOURCE</th>
+            <th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody id="alertsBody">
+          <tr><td colspan="9" class="no-data-row">No alerts yet — start monitoring</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── LIVE PACKET STREAM ────────────────────────────── -->
+  <section class="card card-wide" id="cardPackets">
+    <div class="card-header">
+      <span class="card-title">📦 Live Packet Stream</span>
+      <span class="card-badge">Last 50</span>
+    </div>
+    <div class="table-wrap">
+      <table class="ids-table ids-table-sm">
+        <thead>
+          <tr>
+            <th>TIME</th>
+            <th>SRC IP</th>
+            <th>DST IP</th>
+            <th>SRC PORT</th>
+            <th>DST PORT</th>
+            <th>PROTOCOL</th>
+            <th>SIZE</th>
+            <th>FLAGS</th>
+            <th>SERVICE</th>
+            <th>DIR</th>
+          </tr>
+        </thead>
+        <tbody id="packetsBody">
+          <tr><td colspan="10" class="no-data-row">Start monitoring to see packets</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ALERT DETAIL MODAL
+═══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Alert Detail</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TOAST NOTIFICATION
+═══════════════════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STATUS BAR (footer)
+═══════════════════════════════════════════════════════════════ -->
+<footer class="statusbar">
+  <span>NetShield IDS v1.0 — Smart Intrusion Detection System</span>
+  <span id="sbInterface">Interface: Simulated</span>
+  <span id="sbTime"></span>
+</footer>
+
+<script src="/static/script.js"></script>
+<script src="/static/dashboard.js"></script>
+</body>
+</html>

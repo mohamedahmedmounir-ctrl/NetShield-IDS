@@ -1,0 +1,15 @@
+# NetShield IDS — Python Dependencies
+# =====================================
+# Install with:  pip install -r requirements.txt
+#
+# Core (required)
+flask>=3.0.0
+
+# Networking (optional — only needed for live packet capture)
+# Requires root / administrator privileges to capture raw packets.
+# scapy>=2.5.0
+
+# Machine Learning (optional — enhances AI anomaly detection)
+scikit-learn>=1.4.0
+numpy>=1.26.0
+joblib>=1.3.0
