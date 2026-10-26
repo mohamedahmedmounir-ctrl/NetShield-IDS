@@ -12,10 +12,10 @@ class Config:
     """Application-wide settings."""
 
     # -- Flask --
-    DEBUG         = os.getenv("IDS_DEBUG", "true").lower() == "true"
-    HOST          = os.getenv("IDS_HOST", "0.0.0.0")
+    DEBUG         = os.getenv("IDS_DEBUG", "false").lower() == "true"   # never enable on a public interface
+    HOST          = os.getenv("IDS_HOST", "127.0.0.1")  # local only by default; set IDS_HOST to expose
     PORT          = int(os.getenv("IDS_PORT", "5000"))
-    SECRET_KEY    = os.getenv("IDS_SECRET", "netshield-dev-secret")
+    SECRET_KEY    = os.getenv("IDS_SECRET") or os.urandom(24).hex()
 
     # -- Monitoring --
     INTERFACE     = os.getenv("IDS_IFACE", "\\Device\\NPF_{BEF42E0E-A88C-4696-B408-05426B222047}")
