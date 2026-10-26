@@ -1,6 +1,6 @@
 # ⬡ NetShield IDS — Smart Intrusion Detection System
 
-> A real-time network intrusion detection system with an AI-powered analysis engine and professional cybersecurity dashboard. Built for computer science portfolios and cybersecurity internship applications.
+> A real-time network intrusion detection system with an AI-powered analysis engine and professional cybersecurity dashboard.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-black?logo=flask)
@@ -109,7 +109,7 @@ NetShield-IDS/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/NetShield-IDS.git
+git clone https://github.com/mohamedahmedmounir-ctrl/NetShield-IDS.git
 cd NetShield-IDS
 ```
 
